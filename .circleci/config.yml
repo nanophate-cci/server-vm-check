@@ -43,7 +43,7 @@ jobs:
     - run:
         command: docker version
     - run:
-        command: sleep 300
+        command: sleep 30
   machine:
     machine: true
     steps:
@@ -63,7 +63,7 @@ jobs:
           date
           echo 'Done sleeping.'
     environment:
-    - SLEEP: 300
+    - SLEEP: 30
   machine_dlc:
     machine:
       docker_layer_caching: true
@@ -83,7 +83,7 @@ jobs:
     - run:
         command: docker version
     - run:
-        command: sleep 300
+        command: sleep 30
 
 workflows:
   version: 2
