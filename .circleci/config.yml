@@ -1,0 +1,95 @@
+version: 2.1
+
+jobs:
+  remote_docker:
+    docker:
+    - image: docker:17.06-git
+    steps:
+    - run:
+        command: which docker
+    - run:
+        command: docker -v
+    - setup_remote_docker
+    - run:
+        name: Build a really basic docker image
+        command: |
+          dockerfile=Dockerfile
+          echo "FROM alpine:latest" > $dockerfile
+          echo "RUN echo hello" >> $dockerfile
+          docker build -f $dockerfile --tag throwaway:$CIRCLE_BUILD_NUM .
+          docker run --rm throwaway:$CIRCLE_BUILD_NUM
+    - run:
+        command: docker version
+    - run:
+        command: sleep 30
+  docker_layer_caching:
+    docker:
+    - image: docker:17.06-git
+    steps:
+    - run:
+        command: which docker
+    - run:
+        command: docker -v
+    - setup_remote_docker:
+        docker_layer_caching: true
+    - run:
+        name: Build a really basic docker image
+        command: |
+          dockerfile=Dockerfile
+          echo "FROM alpine:latest" > $dockerfile
+          echo "RUN echo hello" >> $dockerfile
+          docker build -f $dockerfile --tag throwaway:$CIRCLE_BUILD_NUM .
+          docker run --rm throwaway:$CIRCLE_BUILD_NUM
+    - run:
+        command: docker version
+    - run:
+        command: sleep 300
+  machine:
+    machine: true
+    steps:
+    - run:
+        name: Build a really basic docker image
+        command: |
+          dockerfile=Dockerfile
+          echo "FROM alpine:latest" > $dockerfile
+          echo "RUN echo hello" >> $dockerfile
+          docker build -f $dockerfile --tag throwaway:$CIRCLE_BUILD_NUM .
+          docker run --rm throwaway:$CIRCLE_BUILD_NUM
+    - run:
+        command: |
+          echo $SLEEP
+          date
+          sleep $SLEEP
+          date
+          echo 'Done sleeping.'
+    environment:
+    - SLEEP: 300
+  machine_dlc:
+    machine:
+      docker_layer_caching: true
+    steps:
+    - run:
+        command: which docker
+    - run:
+        command: docker -v
+    - run:
+        name: Build a really basic docker image
+        command: |
+          dockerfile=Dockerfile
+          echo "FROM alpine:latest" > $dockerfile
+          echo "RUN echo hello" >> $dockerfile
+          docker build -f $dockerfile --tag throwaway:$CIRCLE_BUILD_NUM .
+          docker run --rm throwaway:$CIRCLE_BUILD_NUM
+    - run:
+        command: docker version
+    - run:
+        command: sleep 300
+
+workflows:
+  version: 2
+  vm-jobs:
+    jobs:
+      - remote_docker
+      - docker_layer_caching
+      - machine
+      - machine_dlc
